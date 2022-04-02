@@ -219,9 +219,9 @@ void loop() {
     if (last_sensor_read_time >= 2000){
 
         if (read_sensors(t, h)){
-            n_sensor_reads++;
             ac_t += t;
             ac_h += h;
+            n_sensor_reads++;
         } else {
             Serial.print("Failed read "); Serial.print(n_sensor_reads); Serial.println( " DHT sensor");
         }
