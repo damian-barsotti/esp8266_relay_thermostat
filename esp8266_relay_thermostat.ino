@@ -6,17 +6,21 @@
 #include <ESP8266WebServer.h>
 
 
-#include <DHT.h>
-
 #include "config_local.h" // File for testing outside git
-# include "config.h"
+#include "config.h"
+
+#include "src/classes/HTReader/HTReader.h"
 
 ESP8266WebServer server(80);
 
-DHT dht(DHTPIN, DHTTYPE);
-
 float target_temperature = 17.0;
 float current_temperature, current_humidity;
+
+
+HTReader *sensor;
+
+// HTReader sensor(DHTPIN, DHTTYPE, SLEEPING_TIME_IN_MSECONDS, READ_AVG_SENSOR_TIME_IN_SECONDS*1000,
+//     temp_slope, temp_shift, humid_slope, humid_shift);
 
 bool relay_closed;
 
@@ -29,24 +33,6 @@ void serial_print_current_sensor(){
     Serial.print("Current temperature: "); Serial.print(current_temperature);
     Serial.print(", Target temperature: "); Serial.print(target_temperature);
     Serial.print(", Current humidity: "); Serial.println(current_humidity);    
-}
-
-bool read_sensors(float &t, float &h){
-  // Reading temperature or humidity takes about 250 milliseconds!
-  // Sensor readings may also be up to 2 seconds 'old' (its a very slow sensor)
-  // Read temperature as Celsius (the default)
-  t = dht.readTemperature();
-  h = dht.readHumidity();
-
-  if (isnan(h) || isnan(t)) {
-      h = 0.0; t = 0.0; 
-      return false;
-  } else {
-      // adjust DHT11
-      h = humid_slope * h + humid_shift;
-      t = temp_slope * t + temp_shift; // Read temperature as C
-      return true;
-  }
 }
 
 bool setup_wifi() {
@@ -169,9 +155,6 @@ void handleForm() {
     server.send(200, "text/html", GO_back); //Send web page
 }
 
-int last_sensor_read_time;
-int last_avg_sensor_read_time;
-
 void setup() {
     float temperature, humidity;
 
@@ -181,9 +164,12 @@ void setup() {
     delay(1000);
     //pinMode(RELAYPIN, OUTPUT);
     
-    dht.begin();
-
     pinMode(RELAYPIN, OUTPUT);
+
+    sensor = new HTReader(
+        DHTPIN, DHTTYPE, SLEEPING_TIME_IN_MSECONDS, 
+        READ_AVG_SENSOR_TIME_IN_SECONDS*1000,
+        temp_slope, temp_shift, humid_slope, humid_shift);
 
     // Restart ESP if max attempt reached
     if (!setup_wifi()){
@@ -194,8 +180,7 @@ void setup() {
         ESP.restart();
     }
 
-    read_sensors(temperature, humidity);
-    publish_data_sensor(temperature, humidity);
+    publish_data_sensor(sensor->getTemp(), sensor->getHumid());
     serial_print_current_sensor();
 
     server.on("/", handleRoot);      //Which routine to handle at root location
@@ -203,53 +188,21 @@ void setup() {
 
     server.begin();                  //Start server
     Serial.println("HTTP server started");
-
-    last_sensor_read_time = 0;
-    last_avg_sensor_read_time = 0;
 }
-
-int n_sensor_reads = 0;
-float ac_t = 0.0, ac_h = 0.0;
 
 // the loop function runs over and over again forever
 void loop() {
-    float t, h;
 
-    // Sensor readings may also be up to 2 seconds 'old' (its a very slow sensor)
-    if (last_sensor_read_time >= 2000){
-
-        if (read_sensors(t, h)){
-            ac_t += t;
-            ac_h += h;
-            n_sensor_reads++;
-        } else {
-            Serial.print("Failed read "); Serial.print(n_sensor_reads); Serial.println( " DHT sensor");
-        }
-
-        last_sensor_read_time = 0;
+    if (sensor->beginLoop()){
+            publish_data_sensor(sensor->getTemp(), sensor->getHumid());
+            serial_print_current_sensor();
+            relay_temp();        
     }
 
-    if (last_avg_sensor_read_time > READ_AVG_SENSOR_TIME_IN_SECONDS*1000){
-
-        if (n_sensor_reads != 0){
-            // Average reads
-            publish_data_sensor(ac_t/n_sensor_reads, ac_h/n_sensor_reads);
-            serial_print_current_sensor();
-            relay_temp();
-        }
-        else
-            Serial.println("Failed to read from DHT sensor!");
-
-        ac_t=0.0; ac_h=0.0;
-        n_sensor_reads = 0;
-
-        //relay_temp();
-        last_avg_sensor_read_time = 0;
-    } 
+    if (sensor->error())
+        Serial.println("Failed to read from sensor!");
 
     server.handleClient();          //Handle client requests
 
-    last_sensor_read_time += SLEEPING_TIME_IN_MSECONDS; 
-    last_avg_sensor_read_time += SLEEPING_TIME_IN_MSECONDS;
     delay(SLEEPING_TIME_IN_MSECONDS);
 }
