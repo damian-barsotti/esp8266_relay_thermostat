@@ -5,12 +5,10 @@
 
 HTReader::HTReader(uint8_t pin, uint8_t type, uint16_t sleeping_time, uint16_t read_avg_time,
     float temp_slope, float temp_shift, float humid_slope, float humid_shift)
-    : _sleeping_time(sleeping_time), _read_avg_time(read_avg_time),
-    // : dht(pin, type), _sleeping_time(sleeping_time), _read_avg_time(read_avg_time),
+     : dht(pin, type), _sleeping_time(sleeping_time), _read_avg_time(read_avg_time),
         _temp_slope(temp_slope), _temp_shift(temp_shift), 
         _humid_slope(humid_slope), _humid_shift(humid_shift){
-            this->dht = new DHT(pin, type);
-            this->dht->begin();
+            dht.begin();
             _last_sensor_read_time = 0;
             _last_avg_sensor_read_time = 0;
             _error = _read_sensors(_ac_t, _ac_h);
@@ -68,8 +66,8 @@ bool HTReader::_read_sensors(float &t, float &h){
   // Reading temperature or humidity takes about 250 milliseconds!
   // Sensor readings may also be up to 2 seconds 'old' (its a very slow sensor)
   // Read temperature as Celsius (the default)
-  t = this->dht->readTemperature();
-  h = this->dht->readHumidity();
+  t = dht.readTemperature();
+  h = dht.readHumidity();
 
   if (isnan(h) || isnan(t)) {
       h = 0.0; t = 0.0; 

@@ -14,7 +14,7 @@ class HTReader {
     float getHumid();
     bool error();
     private:
-        DHT *dht;
+        DHT dht;
         const uint16_t _sleeping_time;
         const uint16_t _read_avg_time;
         const float _temp_slope, _temp_shift, _humid_slope, _humid_shift;
