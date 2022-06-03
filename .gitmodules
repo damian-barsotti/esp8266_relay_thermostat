@@ -1,0 +1,3 @@
+[submodule "src/classes/HTReader"]
+	path = src/classes/HTReader
+	url = git@github.com:damian-barsotti/HTReader.git
