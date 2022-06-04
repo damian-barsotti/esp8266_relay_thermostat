@@ -166,11 +166,6 @@ void setup() {
     
     pinMode(RELAYPIN, OUTPUT);
 
-    sensor = new HTReader(
-        DHTPIN, DHTTYPE, SLEEPING_TIME_IN_MSECONDS, 
-        READ_AVG_SENSOR_TIME_IN_SECONDS*1000,
-        temp_slope, temp_shift, humid_slope, humid_shift);
-
     // Restart ESP if max attempt reached
     if (!setup_wifi()){
         Serial.println("ERROR: max_attempt reached to WiFi connect");
@@ -179,6 +174,12 @@ void setup() {
         delay(1000);
         ESP.restart();
     }
+
+    sensor = new HTReader(
+        DHTPIN, DHTTYPE, SLEEPING_TIME_IN_MSECONDS, 
+        READ_AVG_SENSOR_TIME_IN_SECONDS*1000,
+        temp_slope, temp_shift, humid_slope, humid_shift);
+
 
     publish_data_sensor(sensor->getTemp(), sensor->getHumid());
     serial_print_current_sensor();
