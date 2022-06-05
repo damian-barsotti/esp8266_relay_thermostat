@@ -180,6 +180,11 @@ void setup() {
         READ_AVG_SENSOR_TIME_IN_SECONDS*1000,
         temp_slope, temp_shift, humid_slope, humid_shift);
 
+    while (sensor->error()){
+        Serial.println("ERROR: sensor read. Retrying ...");
+        delay(2000);
+        sensor->reset();
+    }
 
     publish_data_sensor(sensor->getTemp(), sensor->getHumid());
     serial_print_current_sensor();
