@@ -182,7 +182,7 @@ void setup() {
 
     while (sensor->error()){
         Serial.println("ERROR: sensor read. Retrying ...");
-        delay(2000);
+        delay(sensor->delay_ms());
         sensor->reset();
     }
 
