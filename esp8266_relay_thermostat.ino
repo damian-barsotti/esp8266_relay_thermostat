@@ -175,6 +175,8 @@ void setup() {
         ESP.restart();
     }
 
+    Serial.println(String("IP: ") + WiFi.localIP().toString());
+
     sensor = new HTReader(
         DHTPIN, DHTTYPE, SLEEPING_TIME_IN_MSECONDS, 
         READ_AVG_SENSOR_TIME_IN_SECONDS*1000,
