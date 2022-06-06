@@ -21,8 +21,7 @@ const IPAddress subnet(255, 255, 255, 0);
 const uint16_t SLEEPING_TIME_IN_MSECONDS = 500; 
 
 // read sensor interval time
-//const uint16_t READ_AVG_SENSOR_TIME_IN_SECONDS = 2; 
-const uint16_t READ_AVG_SENSOR_TIME_IN_SECONDS = 20; 
+const uint16_t READ_AVG_SENSOR_TIME_IN_SECONDS = 3; 
 
 /*
 const float temp_slope = 1.0f;
