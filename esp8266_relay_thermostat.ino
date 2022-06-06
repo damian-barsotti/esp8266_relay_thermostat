@@ -178,8 +178,7 @@ void setup() {
     Serial.println(String("IP: ") + WiFi.localIP().toString());
 
     sensor = new HTReader(
-        DHTPIN, DHTTYPE, SLEEPING_TIME_IN_MSECONDS, 
-        READ_AVG_SENSOR_TIME_IN_SECONDS*1000,
+        DHTPIN, DHTTYPE, SLEEPING_TIME_IN_MSECONDS, N_AVG_SENSOR,
         temp_slope, temp_shift, humid_slope, humid_shift);
 
     while (sensor->error()){
