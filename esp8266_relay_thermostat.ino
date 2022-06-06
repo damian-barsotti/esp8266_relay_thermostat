@@ -190,10 +190,6 @@ void setup() {
     publish_data_sensor(sensor->getTemp(), sensor->getHumid());
     serial_print_current_sensor();
 
-    if (sensor->error())
-        Serial.println("Failed to read from sensor!");
-
-
     server.on("/", handleRoot);      //Which routine to handle at root location
     server.on("/action_page", handleForm); //form action is handled here
 
