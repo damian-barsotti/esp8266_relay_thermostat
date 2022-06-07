@@ -5,11 +5,10 @@
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
 
+#include "src/classes/HTReader/HTReader.h"
 
 #include "config_local.h" // File for testing outside git
 #include "config.h"
-
-#include "src/classes/HTReader/HTReader.h"
 
 ESP8266WebServer server(80);
 
