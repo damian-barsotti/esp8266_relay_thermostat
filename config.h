@@ -14,8 +14,8 @@ const IPAddress local_IP(0,0,0,0);
 // const IPAddress gateway(192, 168, 0, 1);
 const IPAddress subnet(255, 255, 255, 0);
 // Optional DNS
-//IPAddress primaryDNS(8, 8, 8, 8);   //optional
-//IPAddress secondaryDNS(8, 8, 4, 4); //optional
+// IPAddress primaryDNS(8, 8, 8, 8);   //optional
+// IPAddress secondaryDNS(8, 8, 4, 4); //optional
 
 // sleeping time
 const uint16_t SLEEPING_TIME_IN_MSECONDS = 500; 
@@ -23,12 +23,10 @@ const uint16_t SLEEPING_TIME_IN_MSECONDS = 500;
 // number of readings to take average
 const uint16_t N_AVG_SENSOR = 6;
 
-/*
-const float temp_slope = 1.0f;
-const float temp_shift = 0.0f;
-const float humid_slope = 1.0f;
-const float humid_shift = 0.0f;
-*/
+// const float temp_slope = 1.0f;
+// const float temp_shift = 0.0f;
+// const float humid_slope = 1.0f;
+// const float humid_shift = 0.0f;
 
 const float temp_slope = 1.005f;
 const float temp_shift = -1.746f;
