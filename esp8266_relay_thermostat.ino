@@ -119,7 +119,7 @@ const char GO_back[] PROGMEM = "<a href='/'> Go Back </a>";
 //===============================================================
 void handleRoot() {
     char MAIN_page[600];
-    char *str_relay_state;
+    const char *str_relay_state;
 
     if (relay_closed)
         str_relay_state = "closed";
