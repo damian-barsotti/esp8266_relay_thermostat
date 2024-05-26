@@ -18,9 +18,6 @@ float current_temperature, current_humidity;
 
 HTReader *sensor;
 
-// HTReader sensor(DHTPIN, DHTTYPE, SLEEPING_TIME_IN_MSECONDS, READ_AVG_SENSOR_TIME_IN_SECONDS*1000,
-//     temp_slope, temp_shift, humid_slope, humid_shift);
-
 bool relay_closed;
 
 void publish_data_sensor(float p_temperature, float p_humidity) {
@@ -103,14 +100,6 @@ const char MAIN_page_template[] PROGMEM = R"=====(
 </body>
 </html>
 )=====";
-
-//  <input type="range" id="target_temp" name="target_temp" min="16" max="30" value="17" onchange="updateTextInput(this.value);">
-  // <input type="text" id="textInput" value="">
-  // <script type="text/javascript">
-  //       function updateTextInput(val) {
-  //         document.getElementById('textInput').value=val; 
-  //       }
-  // </script>
 
 const char GO_back[] PROGMEM = "<a href='/'> Go Back </a>";
 
