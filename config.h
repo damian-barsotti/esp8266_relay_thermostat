@@ -20,9 +20,6 @@ const IPAddress subnet(255, 255, 255, 0);
 // sleeping time
 const uint16_t SLEEPING_TIME_IN_MSECONDS = 500; 
 
-// number of readings to take average
-const uint16_t N_AVG_SENSOR = 6;
-
 // const float temp_slope = 1.0f;
 // const float temp_shift = 0.0f;
 // const float humid_slope = 1.0f;
