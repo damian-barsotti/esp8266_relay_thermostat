@@ -12,7 +12,7 @@
 
 ESP8266WebServer server(80);
 
-float target_temperature = 17.0;
+float target_temperature = INIT_TARGET_TEMP;
 float current_temperature, current_humidity;
 
 HTReader *sensor;
