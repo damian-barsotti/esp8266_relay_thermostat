@@ -15,7 +15,7 @@ ESP8266WebServer server(80);
 float target_temperature = INIT_TARGET_TEMP;
 float current_temperature, current_humidity;
 
-HTReader sensor(
+HTReader ht_sensor(
     DHTPIN, DHTTYPE, SLEEPING_TIME_IN_MSECONDS,
     temp_slope, temp_shift,
     humid_slope, humid_shift,
@@ -182,15 +182,15 @@ void setup()
     }
 
     Serial.println(String("IP: ") + WiFi.localIP().toString());
-    sensor.begin();
-    while (sensor.error())
+    ht_sensor.begin();
+    while (ht_sensor.error())
     {
         Serial.println("ERROR: sensor read. Retrying ...");
-        delay(sensor.delay_ms());
-        sensor.reset();
+        delay(ht_sensor.delay_ms());
+        ht_sensor.reset();
     }
 
-    publish_data_sensor(sensor.getTemp(), sensor.getHumid());
+    publish_data_sensor(ht_sensor.getTemp(), ht_sensor.getHumid());
     serial_print_current_sensor();
 
     server.on("/", handleRoot);            // Which routine to handle at root location
@@ -204,14 +204,14 @@ void setup()
 void loop()
 {
 
-    if (sensor.beginLoop())
+    if (ht_sensor.beginLoop())
     {
-        publish_data_sensor(sensor.getTemp(), sensor.getHumid());
+        publish_data_sensor(ht_sensor.getTemp(), ht_sensor.getHumid());
         serial_print_current_sensor();
         relay_temp();
     }
 
-    if (sensor.error())
+    if (ht_sensor.error())
         Serial.println("Failed to read from sensor!");
 
     server.handleClient(); // Handle client requests
