@@ -5,7 +5,7 @@
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
 
-#include "src/classes/HTReader/HTReader.h"
+#include "src/esp8266_controllers/HTReader/HTReader.h"
 
 #include "config_local.h" // File for testing outside git
 #include "config.h"

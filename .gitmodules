@@ -1,8 +1,3 @@
-[submodule "src/classes/HTReader"]
-	path = src/classes/HTReader
-	url = https://github.com/damian-barsotti/HTReader.git
-	branch = main
-
-[submodule "src/classes/CircularBuffer"]
-	path = src/classes/CircularBuffer
-	url = https://github.com/damian-barsotti/CircularBuffer.git
+[submodule "esp8266_controllers"]
+	path = esp8266_controllers
+	url = https://github.com/damian-barsotti/esp8266_controllers.git
