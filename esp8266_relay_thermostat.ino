@@ -2,14 +2,15 @@
   ESP8266 Relay Temperature by Damian Barsotti
 */
 
-#include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
 
+#include "src/esp8266_controllers/Wifi/Wifi.h"
 #include "src/esp8266_controllers/HTReader/HTReader.h"
 
 #include "config_local.h" // File for testing outside git
 #include "config.h"
 
+Wifi wifi(Serial);
 ESP8266WebServer server(80);
 
 float target_temperature = INIT_TARGET_TEMP;
@@ -37,39 +38,6 @@ void serial_print_current_sensor()
     Serial.print(target_temperature);
     Serial.print(", Current humidity: ");
     Serial.println(current_humidity);
-}
-
-bool setup_wifi()
-{
-
-    // init the WiFi connection
-    Serial.println();
-    Serial.print("INFO: Connecting to ");
-    Serial.println(WIFI_SSID);
-    WiFi.mode(WIFI_STA);
-
-    //  Enable light sleep
-    wifi_set_sleep_type(LIGHT_SLEEP_T);
-
-    if (local_IP != IPAddress(0, 0, 0, 0) && !WiFi.config(local_IP, gateway, subnet))
-    {
-        Serial.println("STA Failed to configure fixed IP");
-        return false;
-    }
-
-    WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
-
-    static const int max_attempt = 100;
-    int attempt = 0;
-    while (attempt < max_attempt && WiFi.status() != WL_CONNECTED)
-    {
-        delay(500);
-        Serial.print(".");
-        attempt++;
-    }
-    Serial.println("");
-
-    return (attempt < max_attempt);
 }
 
 void relay_temp()
@@ -172,16 +140,16 @@ void setup()
     pinMode(RELAYPIN, OUTPUT);
 
     // Restart ESP if max attempt reached
-    if (!setup_wifi())
+    if (!wifi.begin(WIFI_SSID, WIFI_PASSWORD, local_IP, gateway, subnet))
     {
         Serial.println("ERROR: max_attempt reached to WiFi connect");
         Serial.print("Waiting and Restaring");
-        WiFi.disconnect();
+        wifi.disconnect();
         delay(1000);
         ESP.restart();
     }
 
-    Serial.println(String("IP: ") + WiFi.localIP().toString());
+    Serial.println(String("IP: ") + wifi.localIP().toString());
     ht_sensor.begin();
     while (ht_sensor.error())
     {
