@@ -17,7 +17,9 @@ float current_temperature, current_humidity;
 
 HTReader sensor(
     DHTPIN, DHTTYPE, SLEEPING_TIME_IN_MSECONDS,
-    temp_slope, temp_shift, humid_slope, humid_shift);
+    temp_slope, temp_shift,
+    humid_slope, humid_shift,
+    n_reads);
 
 bool relay_closed;
 

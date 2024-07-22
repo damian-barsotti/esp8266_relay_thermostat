@@ -30,6 +30,8 @@ const float temp_shift = -1.746f;
 const float humid_slope = 1.775f;
 const float humid_shift = -38.07f;
 
+const std::size_t n_reads = 3;
+
 #define INIT_TARGET_TEMP 21.0
 
 #ifdef  ARDUINO_ESP8266_GENERIC
