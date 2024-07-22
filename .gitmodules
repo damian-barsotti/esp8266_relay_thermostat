@@ -1,3 +1,3 @@
-[submodule "esp8266_controllers"]
-	path = esp8266_controllers
+[submodule "src/esp8266_controllers"]
+	path = src/esp8266_controllers
 	url = https://github.com/damian-barsotti/esp8266_controllers.git
