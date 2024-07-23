@@ -10,7 +10,7 @@
 #include "config_local.h" // File for testing outside git
 #include "config.h"
 
-Wifi wifi(Serial);
+Wifi wifi(Serial, WIFI_SSID, WIFI_PASSWORD, local_IP, gateway, subnet);
 ESP8266WebServer server(80);
 
 float target_temperature = INIT_TARGET_TEMP;
@@ -140,7 +140,7 @@ void setup()
     pinMode(RELAYPIN, OUTPUT);
 
     // Restart ESP if max attempt reached
-    if (!wifi.begin(WIFI_SSID, WIFI_PASSWORD, local_IP, gateway, subnet))
+    if (!wifi.begin())
     {
         Serial.println("ERROR: max_attempt reached to WiFi connect");
         Serial.print("Waiting and Restaring");
