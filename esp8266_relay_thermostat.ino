@@ -7,10 +7,14 @@
 #include "src/esp8266_controllers/Wifi/Wifi.h"
 #include "src/esp8266_controllers/HTReader/HTReader.h"
 
+#if __has_include("config_local.h")
 #include "config_local.h" // File for testing outside git
-#include "config.h"
-
 Wifi wifi(Serial, WIFI_SSID, WIFI_PASSWORD, local_IP, gateway, subnet);
+#else
+#include "config.h"
+Wifi wifi(Serial, WIFI_SSID, WIFI_PASSWORD);
+#endif
+
 ESP8266WebServer server(80);
 
 float target_temperature = INIT_TARGET_TEMP;
