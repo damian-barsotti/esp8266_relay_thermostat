@@ -6,6 +6,7 @@
 
 #include "src/esp8266_controllers/Wifi/Wifi.h"
 #include "src/esp8266_controllers/HTReader/HTReader.h"
+#include "src/esp8266_controllers/Mqtt/Mqtt.h"
 
 #if __has_include("config_local.h")
 #include "config_local.h" // File for testing outside git
@@ -19,6 +20,8 @@ ESP8266WebServer server(80);
 
 float target_temperature = INIT_TARGET_TEMP;
 float current_temperature, current_humidity;
+bool relay_closed = false;
+const char *relay_mode = COMM_OFF;
 
 HTReader ht_sensor(
     DHTPIN, DHTTYPE, SLEEPING_TIME_IN_MSECONDS,
@@ -26,12 +29,59 @@ HTReader ht_sensor(
     humid_slope, humid_shift,
     n_reads);
 
-bool relay_closed;
+std::array topics{MQTT_SENSOR_TOPIC,
+                  MQTT_REALY_POWER_SET_TOPIC,
+                  MQTT_RELAY_MODE_SET_TOPIC,
+                  MQTT_RELAY_TEMP_SET_TOPIC,
+                  MQTT_RELAY_GET_TOPIC};
 
+Mqtt mqtt(Serial, MQTT_SERVER_IP, MQTT_SERVER_PORT,
+          MQTT_CLIENT_ID, MQTT_USER, MQTT_PASSWORD,
+          MQTT_LOG_TOPIC,
+          topics.data(), topics.size(),
+          callback);
+
+String header_log(char const *level, int n_log)
+{
+    return String(level) + " " + String(n_log) + ": ";
+}
+
+String header_log_info(int n_log)
+{
+    return header_log("INFO", n_log);
+}
+
+String header_log_warn(int n_log)
+{
+    return header_log("WARN", n_log);
+}
+
+int n_log_info = 0;
+int n_log_warn = 0;
+
+void logger_info(String msg)
+{
+    if (mqtt.log(header_log_info(n_log_info) + msg))
+        n_log_info++;
+}
+
+void logger_warn(String msg)
+{
+    if (mqtt.log(header_log_warn(n_log_warn) + msg))
+        n_log_warn++;
+}
+
+// function called to publish the temperature and the humidity
 void publish_data_sensor(float p_temperature, float p_humidity)
 {
+    DynamicJsonDocument root(200);
+
     current_temperature = p_temperature;
     current_humidity = p_humidity;
+    root["temperature"] = (String)p_temperature;
+    root["humidity"] = (String)p_humidity;
+
+    mqtt.publish(root, MQTT_SENSOR_TOPIC);
 }
 
 void serial_print_current_sensor()
@@ -44,10 +94,24 @@ void serial_print_current_sensor()
     Serial.println(current_humidity);
 }
 
+void serial_print_relay_state()
+{
+    if (relay_closed)
+        Serial.print("Relay closed. ");
+    else
+        Serial.print("Relay open. ");
+    Serial.print("Relay mode ");
+    Serial.println(relay_mode);
+}
+
 void relay_temp()
 {
 
-    relay_closed = current_temperature < target_temperature;
+    if (relay_mode == COMM_AUTO)
+    {
+        relay_closed = current_temperature < target_temperature;
+    }
+
     if (relay_closed)
         digitalWrite(RELAYPIN, HIGH);
     else
@@ -131,6 +195,82 @@ void handleForm()
     server.send(200, "text/html", GO_back); // Send web page
 }
 
+// function called to publish the relay thermostat state
+void publish_relay_thermostat_state()
+{
+    DynamicJsonDocument root(200);
+
+    root["temperature"] = String(target_temperature);
+    root["mode"] = String(relay_mode);
+    mqtt.publish(root, MQTT_RELAY_GET_TOPIC);
+}
+
+// function called when a MQTT message arrived
+void callback(char *topic, byte *payload, unsigned int length)
+{
+    char command[length + 1];
+
+    Serial.print("Callback called with topic "); Serial.println(topic);
+    if (strcmp(topic, MQTT_RELAY_GET_TOPIC) == 0 ||
+        strcmp(topic, MQTT_LOG_TOPIC) == 0 ||
+        strcmp(topic, MQTT_SENSOR_TOPIC) == 0)
+        return;
+
+    Serial.print("CB: Message arrived [");
+    Serial.print(topic);
+    Serial.print("] ");
+
+    for (int i = 0; i < length; i++)
+        command[i] = tolower((char)payload[i]);
+    command[length] = '\0';
+
+    Serial.println(command);
+
+    if (strcmp(MQTT_REALY_POWER_SET_TOPIC, topic) == 0)
+    {
+        if (strcmp(COMM_OFF, command) == 0)
+        {
+            Serial.println("Turn Relay Thermostat off ...");
+            relay_mode = COMM_OFF;
+            relay_closed = false;
+        }
+        else
+        { // if (strcmp(COMM_ON, command) == 0) {
+            Serial.println("Turn Relay Thermostat on ...");
+            relay_mode = COMM_ON;
+            relay_closed = true;
+        }
+    }
+    else if (strcmp(MQTT_RELAY_MODE_SET_TOPIC, topic) == 0)
+    {
+
+        if (strcmp(COMM_OFF, command) == 0)
+        {
+            Serial.println("Set Relay Thermostat mode to off ...");
+            relay_mode = COMM_OFF;
+            relay_closed = false;
+        }
+        else if (strcmp(COMM_AUTO, command) == 0)
+        {
+            Serial.println("Set Relay Thermostat mode to auto ...");
+            relay_mode = COMM_AUTO;
+        }
+    }
+    else if (strcmp(MQTT_RELAY_TEMP_SET_TOPIC, topic) == 0)
+    {
+
+        target_temperature = round(String(command).toFloat());
+        Serial.print("Set temperature to ");
+        Serial.println(target_temperature);
+    }
+
+    relay_temp();
+    publish_relay_thermostat_state();
+    serial_print_current_sensor();
+
+    delay(500);
+}
+
 void setup()
 {
     float temperature, humidity;
@@ -154,6 +294,7 @@ void setup()
     }
 
     Serial.println(String("IP: ") + wifi.localIP().toString());
+
     ht_sensor.begin();
     while (ht_sensor.error())
     {
@@ -162,7 +303,20 @@ void setup()
         ht_sensor.reset();
     }
 
+    // init the MQTT connection
+    if (!mqtt.begin() && mqtt.attempt() > mqtt_max_attempt)
+    {
+        Serial.println("MQTT error");
+        Serial.print("Waiting and Restaring");
+        wifi.disconnect();
+        delay(1000);
+        ESP.restart();
+    }
+
     publish_data_sensor(ht_sensor.getTemp(), ht_sensor.getHumid());
+    relay_temp();
+    publish_relay_thermostat_state();
+
     serial_print_current_sensor();
 
     server.on("/", handleRoot);            // Which routine to handle at root location
@@ -176,15 +330,29 @@ void setup()
 void loop()
 {
 
-    if (ht_sensor.beginLoop())
+    Serial.println("-");
+    if (mqtt.beginLoop())
     {
-        publish_data_sensor(ht_sensor.getTemp(), ht_sensor.getHumid());
-        serial_print_current_sensor();
-        relay_temp();
+        if (ht_sensor.beginLoop())
+        {
+            relay_temp();
+            publish_data_sensor(ht_sensor.getTemp(), ht_sensor.getHumid());
+        }
+
+        if (ht_sensor.error())
+            logger_warn("Failed to read from DHT sensor!");
+    }
+    else if (mqtt.attempt() > mqtt_max_attempt)
+    {
+        Serial.println("Cannot connect to mqtt");
+        Serial.print("Waiting and Restaring");
+        mqtt.reset();
+        wifi.disconnect();
+        delay(1000);
+        ESP.restart();
     }
 
-    if (ht_sensor.error())
-        Serial.println("Failed to read from sensor!");
+    serial_print_relay_state();
 
     server.handleClient(); // Handle client requests
 
