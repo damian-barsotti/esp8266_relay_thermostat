@@ -210,6 +210,8 @@ void callback(char *topic, byte *payload, unsigned int length)
 {
     char command[length + 1];
 
+    mqtt.announce_callback();
+
     Serial.print("Callback called with topic "); Serial.println(topic);
     if (strcmp(topic, MQTT_RELAY_GET_TOPIC) == 0 ||
         strcmp(topic, MQTT_LOG_TOPIC) == 0 ||
