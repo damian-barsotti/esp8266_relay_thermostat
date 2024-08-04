@@ -212,7 +212,8 @@ void callback(char *topic, byte *payload, unsigned int length)
 
     mqtt.announce_callback();
 
-    Serial.print("Callback called with topic "); Serial.println(topic);
+    Serial.print("Callback called with topic ");
+    Serial.println(topic);
     if (strcmp(topic, MQTT_RELAY_GET_TOPIC) == 0 ||
         strcmp(topic, MQTT_LOG_TOPIC) == 0 ||
         strcmp(topic, MQTT_SENSOR_TOPIC) == 0)
@@ -297,14 +298,6 @@ void setup()
 
     Serial.println(String("IP: ") + wifi.localIP().toString());
 
-    ht_sensor.begin();
-    while (ht_sensor.error())
-    {
-        Serial.println("ERROR: sensor read. Retrying ...");
-        delay(ht_sensor.delay_ms());
-        ht_sensor.reset();
-    }
-
     // init the MQTT connection
     if (!mqtt.begin() && mqtt.attempt() > mqtt_max_attempt)
     {
@@ -315,11 +308,18 @@ void setup()
         ESP.restart();
     }
 
-    publish_data_sensor(ht_sensor.getTemp(), ht_sensor.getHumid());
-    relay_temp();
-    publish_relay_thermostat_state();
+    ht_sensor.begin();
+    if (ht_sensor.error())
+        logger_warn("ERROR: sensor read.");
+    else
+    {
 
-    serial_print_current_sensor();
+        publish_data_sensor(ht_sensor.getTemp(), ht_sensor.getHumid());
+        relay_temp();
+        publish_relay_thermostat_state();
+
+        serial_print_current_sensor();
+    }
 
     server.on("/", handleRoot);            // Which routine to handle at root location
     server.on("/action_page", handleForm); // form action is handled here
