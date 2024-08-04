@@ -20,8 +20,8 @@ ESP8266WebServer server(80);
 
 float target_temperature = INIT_TARGET_TEMP;
 float current_temperature, current_humidity;
-bool relay_closed = false;
-const char *relay_mode = COMM_OFF;
+bool relay_closed = true;
+const char *relay_mode = COMM_ON;
 
 HTReader ht_sensor(
     DHTPIN, DHTTYPE, SLEEPING_TIME_IN_MSECONDS,
