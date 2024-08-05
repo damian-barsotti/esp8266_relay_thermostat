@@ -312,11 +312,7 @@ void setup()
         logger_warn("ERROR: sensor read.");
     else
     {
-
         publish_data_sensor(ht_sensor.getTemp(), ht_sensor.getHumid());
-        relay_temp();
-        publish_relay_thermostat_state();
-
         serial_print_current_sensor();
     }
 
