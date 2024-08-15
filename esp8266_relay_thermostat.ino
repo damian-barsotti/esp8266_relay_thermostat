@@ -307,6 +307,8 @@ void setup()
         ESP.restart();
     }
 
+    publish_relay_thermostat_state();
+
     ht_sensor.begin();
     if (ht_sensor.error())
         logger_warn("ERROR: sensor read.");
