@@ -25,6 +25,7 @@ const PROGMEM char* MQTT_USER = "[Redacted]";
 const PROGMEM char* MQTT_PASSWORD = "[Redacted]";
 
 // MQTT: topics
+const PROGMEM char* MQTT_WILL_TOPIC = "home/somewhere/relay01/will";
 const PROGMEM char* MQTT_SENSOR_TOPIC = "home/somewhere/relay01/sensor";
 const PROGMEM char* MQTT_LOG_TOPIC = "home/somewhere/relay01/log";
 const PROGMEM char* MQTT_RELAY_GET_TOPIC = "home/somewhere/relay01/get";

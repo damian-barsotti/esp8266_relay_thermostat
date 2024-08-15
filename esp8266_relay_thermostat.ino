@@ -37,7 +37,7 @@ std::array topics{MQTT_SENSOR_TOPIC,
 
 Mqtt mqtt(Serial, MQTT_SERVER_IP, MQTT_SERVER_PORT,
           MQTT_CLIENT_ID, MQTT_USER, MQTT_PASSWORD,
-          MQTT_LOG_TOPIC,
+          MQTT_WILL_TOPIC, MQTT_LOG_TOPIC,
           topics.data(), topics.size(),
           callback);
 
