@@ -284,6 +284,7 @@ void setup()
     delay(1000);
 
     pinMode(RELAYPIN, OUTPUT);
+    relay_temp();
 
     // Restart ESP if max attempt reached
     if (!wifi.begin())
