@@ -73,4 +73,7 @@ static const int mqtt_max_attempt = 10;
 //#define RELAYPIN D2
 #define RELAYPIN D1
 
+#define RELAY_CLOSED_INIT true
+#define HIGH_TRIGGER true
+
 #endif

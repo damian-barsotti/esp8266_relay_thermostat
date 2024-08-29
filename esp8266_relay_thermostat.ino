@@ -20,7 +20,7 @@ ESP8266WebServer server(80);
 
 float target_temperature = INIT_TARGET_TEMP;
 float current_temperature, current_humidity;
-bool relay_closed = true;
+bool relay_closed = RELAY_CLOSED_INIT;
 const char *relay_mode = COMM_ON;
 
 HTReader ht_sensor(
@@ -112,7 +112,7 @@ void relay_temp()
         relay_closed = current_temperature < target_temperature;
     }
 
-    if (relay_closed)
+    if (relay_closed == HIGH_TRIGGER)
         digitalWrite(RELAYPIN, HIGH);
     else
         digitalWrite(RELAYPIN, LOW);
